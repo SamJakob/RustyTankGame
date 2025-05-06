@@ -16,9 +16,21 @@ macro_rules! empty_token_stream {
 #[proc_macro]
 pub fn vector_field(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as Ident);
+    let input_name = input.to_string();
+
+    let is_float = input_name.starts_with("f") || input_name.starts_with("Float");
+    let is_nan = if is_float {
+        quote!(self == #input::NAN)
+    } else {
+        quote!(false)
+    };
 
     TokenStream::from(quote!(
         impl VectorField for #input {
+
+            fn is_nan(self) -> bool {
+                #is_nan
+            }
 
             fn abs(self) -> Self {
                 self.abs()

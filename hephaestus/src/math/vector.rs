@@ -1,4 +1,5 @@
 use hephaestus_macros::{vector_field, VectorBase, VectorBaseImpl};
+use std::fmt::Display;
 use std::marker::Sized;
 use std::ops::{AddAssign, Div, DivAssign, Mul, MulAssign, Sub};
 
@@ -16,7 +17,11 @@ pub trait VectorField:
     + DivAssign<Self>
     + Copy
     + Default
+    + Display
 {
+    /// is_nan returns true if the value is Not a Number.
+    fn is_nan(self) -> bool;
+
     /// Compute the absolute value of the [VectorField].
     fn abs(self) -> Self;
 
@@ -105,14 +110,14 @@ pub trait Vector<T: VectorField, const N: usize> {
 impl<T: VectorField, const N: usize, B: VectorBase<T, N> + DivAssign<T>> Vector<T, N> for B {
     fn normalize(&mut self) {
         let magnitude = self.magnitude();
-        if magnitude > T::default() {
+        if !magnitude.is_nan() && (magnitude > T::default() || magnitude < T::default()) {
             *self /= magnitude;
         }
     }
 
     fn normalized(self) -> Self {
         let magnitude = self.magnitude();
-        if magnitude > T::default() {
+        if !magnitude.is_nan() && (magnitude > T::default() || magnitude < T::default()) {
             Self::construct_from_vector_fields(
                 self.get_vector_fields().map(|field| field / magnitude),
             )
@@ -270,6 +275,14 @@ mod tests {
     }
 
     #[test]
+    fn vector2_test_normalize_zero() {
+        let mut vector = Vector2 { x: 0.0, y: 0.0 };
+        vector.normalize();
+
+        assert_eq!(vector, Vector2 { x: 0.0, y: 0.0 })
+    }
+
+    #[test]
     fn vector2_test_normalize() {
         let mut vector = Vector2 { x: 3.0, y: 4.0 };
         vector.normalize();
@@ -281,6 +294,13 @@ mod tests {
                 y: 4.0 / 5.0,
             }
         )
+    }
+
+    #[test]
+    fn vector2_test_normalize_assign_zero() {
+        let vector = Vector2 { x: 0.0, y: 0.0 };
+
+        assert_eq!(vector.normalized(), Vector2 { x: 0.0, y: 0.0 })
     }
 
     #[test]

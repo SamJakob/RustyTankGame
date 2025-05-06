@@ -2,8 +2,8 @@ mod helpers;
 
 use helpers::camel_to_snake_case;
 use proc_macro::TokenStream;
-use quote::{quote, ToTokens};
-use syn::{parse_macro_input, AttrStyle, Data, DeriveInput, Field, Ident};
+use quote::{ToTokens, quote};
+use syn::{AttrStyle, Data, DeriveInput, Field, Ident, parse_macro_input};
 
 /// empty_token_stream is a sugar that does [TokenStream::new] and then uses [TokenStream::into] to
 /// convert it to the context-specific type.
@@ -148,7 +148,7 @@ pub fn derive_vector_base(input: TokenStream) -> TokenStream {
     )
 }
 
-#[proc_macro_derive(VectorBaseImpl, attributes(foo))]
+#[proc_macro_derive(VectorBaseImpl)]
 pub fn derive_impl_from_vector_base(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
